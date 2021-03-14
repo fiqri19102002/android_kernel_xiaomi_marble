@@ -600,7 +600,7 @@ endif
 # CC_VERSION_TEXT is referenced from Kconfig (so it needs export),
 # and from include/config/auto.conf.cmd to detect the compiler upgrade.
 # cc-wrapper may not yet be compiled, use NO_WRAPPER_CC.
-CC_VERSION_TEXT = $(shell $(NO_WRAPPER_CC) --version 2>/dev/null | head -n 1 | sed 's/\#//g')
+CC_VERSION_TEXT = $(subst $(pound),,$(shell $(NO_WRAPPER_CC) --version 2>/dev/null | head -n 1))
 
 ifneq ($(findstring clang,$(CC_VERSION_TEXT)),)
 ifneq ($(CROSS_COMPILE),)
