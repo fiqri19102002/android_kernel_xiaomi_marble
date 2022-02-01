@@ -60,6 +60,9 @@ enum ufs_qcom_ber_mode {
 #define UFS_QCOM_LIMIT_HS_RATE		PA_HS_MODE_B
 #define UFS_QCOM_LIMIT_DESIRED_MODE	FAST
 #define UFS_QCOM_LIMIT_PHY_SUBMODE	UFS_QCOM_PHY_SUBMODE_G4
+#define UFS_QCOM_DEFAULT_TURBO_FREQ     300000000
+#define UFS_QCOM_DEFAULT_TURBO_L1_FREQ  300000000
+#define UFS_NOM_THRES_FREQ	300000000
 #define UFS_MEM_REG_PA_ERR_CODE	0xCC
 
 /* default value of auto suspend is 3 seconds */
@@ -230,6 +233,10 @@ enum ufs_qcom_phy_init_type {
 #define PA_VS_CLK_CFG_REG_MASK	0x1FF
 #define PA_VS_CLK_CFG_REG_MASK1 0xFF
 
+#define PA_VS_CLK_CFG_REG_MASK_TURBO 0x100
+#define ATTR_HW_CGC_EN_TURBO 0x100
+#define ATTR_HW_CGC_EN_NON_TURBO 0x000
+
 #define PA_VS_CORE_CLK_40NS_CYCLES	0x9007
 #define PA_VS_CORE_CLK_40NS_CYCLES_MASK	0x3F
 
@@ -243,6 +250,10 @@ enum ufs_qcom_phy_init_type {
 #define DME_VS_CORE_CLK_CTRL_MAX_CORE_CLK_1US_CYCLES_MASK	0xFF
 #define DME_VS_CORE_CLK_CTRL_CORE_CLK_DIV_EN_BIT		BIT(8)
 #define DME_VS_CORE_CLK_CTRL_DME_HW_CGC_EN			BIT(9)
+
+#define TEST_BUS_CTRL_2_HCI_SEL_TURBO_MASK 0x010
+#define TEST_BUS_CTRL_2_HCI_SEL_TURBO 0x010
+#define TEST_BUS_CTRL_2_HCI_SEL_NONTURBO 0x000
 
 /* Device Quirks */
 /*
@@ -626,6 +637,30 @@ struct ufs_qcom_host {
 	unsigned int boost_monitor_timer;
 	u32 min_boost_thres;
 	u32 max_boost_thres;
+
+	/* Multi level clk scaling Support */
+	bool ml_scale_sup;
+	bool is_turbo_enabled;
+	/* threshold count to scale down from turbo to NOM */
+	u32 turbo_down_thres_cnt;
+	/* turbo freq for UFS clocks read from DT */
+	u32 axi_turbo_clk_freq;
+	u32 axi_turbo_l1_clk_freq;
+	u32 ice_turbo_clk_freq;
+	u32 ice_turbo_l1_clk_freq;
+	u32 unipro_turbo_clk_freq;
+	u32 unipro_turbo_l1_clk_freq;
+	bool turbo_unipro_attr_applied;
+	/* some target need additional setting to support turbo mode*/
+	bool turbo_additional_conf_req;
+	/* current UFS clocks freq */
+	u32 curr_axi_freq;
+	u32 curr_ice_freq;
+	u32 curr_unipro_freq;
+	/* Indicates curr and next clk mode */
+	u32 clk_next_mode;
+	u32 clk_curr_mode;
+	bool is_clk_scale_enabled;
 };
 
 static inline u32
