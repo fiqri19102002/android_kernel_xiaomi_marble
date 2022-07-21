@@ -250,6 +250,7 @@
 #define QCOM_ID_QRB4210			523
 #define QCOM_ID_QRB2210			524
 #define QCOM_ID_SM8475			530
+#define QCOM_ID_SM7475			591
 #define QCOM_ID_SA8775P			534
 #define QCOM_ID_PARROT			537
 #define QCOM_ID_QRU1000			539
