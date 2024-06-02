@@ -1055,6 +1055,12 @@ static ssize_t gesture_single_tap_enabled_store(struct device *dev,
 	if (sscanf(buf, "%d", &input) < 0 || input > 1)
 		return -EINVAL;
 
+	if (touch_data->getModeValue(Touch_Singletap_Gesture,
+				     GET_CUR_VALUE) != input) {
+		sysfs_notify(&xiaomi_touch_dev.dev->kobj, NULL,
+			     "gesture_single_tap_enabled");
+	}
+
 	touch_data->setModeValue(Touch_Singletap_Gesture, input);
 
 	return count;
@@ -1114,6 +1120,12 @@ static ssize_t gesture_double_tap_enabled_store(struct device *dev,
 
 	if (sscanf(buf, "%d", &input) < 0 || input > 1)
 		return -EINVAL;
+
+	if (touch_data->getModeValue(Touch_Doubletap_Mode,
+				     GET_CUR_VALUE) != input) {
+		sysfs_notify(&xiaomi_touch_dev.dev->kobj, NULL,
+			     "gesture_double_tap_enabled");
+	}
 
 	touch_data->setModeValue(Touch_Doubletap_Mode, input);
 
