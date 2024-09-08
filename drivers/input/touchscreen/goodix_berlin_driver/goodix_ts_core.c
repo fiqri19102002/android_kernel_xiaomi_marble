@@ -1938,6 +1938,7 @@ out:
 	/* open esd */
 	goodix_ts_blocking_notify(NOTIFY_RESUME, NULL);
 	xiaomi_touch_set_suspend_state(0);
+	kthread_run(hw_ops->set_coor_mode, core_data, "gtp_resume_set_coor_mode");
 	ts_info("Resume end");
 	return 0;
 }
@@ -2322,6 +2323,8 @@ upgrade:
 		goto uninit_fw;
 	}
 	cd->init_stage = CORE_INIT_STAGE2;
+
+	hw_ops->set_coor_mode(core_data);
 
 	return 0;
 
