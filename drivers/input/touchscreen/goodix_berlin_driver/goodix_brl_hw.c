@@ -277,9 +277,8 @@ int brl_suspend(struct goodix_ts_core *cd)
 
 #define GOODIX_BRLD_CMD_RAWDATA 0x90
 #define GOODIX_BRLD_CMD_COORD 0x91
-int brl_set_coor_mode(void *data)
+int brl_set_coor_mode(struct goodix_ts_core *cd)
 {
-	struct goodix_ts_core *cd = data;
 	struct goodix_ts_cmd cmd;
 	int ret = 0;
 
