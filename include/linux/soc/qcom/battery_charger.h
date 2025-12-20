@@ -11,12 +11,19 @@
 
 enum battery_charger_prop {
 	BATTERY_RESISTANCE,
+	USB_CC_ORIENTATION,
 	FLASH_ACTIVE,
+	HAS_DP_PS5169,
 	BATTERY_CHARGER_PROP_MAX,
 };
 
 enum bc_hboost_event {
 	VMAX_CLAMP,
+};
+
+enum charger_notifier_events {
+	/* thermal board temp */
+	THERMAL_BOARD_TEMP = 0,
 };
 
 #if IS_ENABLED(CONFIG_QTI_BATTERY_CHARGER)
@@ -26,6 +33,10 @@ int qti_battery_charger_set_prop(const char *name,
 				enum battery_charger_prop prop_id, int val);
 int register_hboost_event_notifier(struct notifier_block *nb);
 int unregister_hboost_event_notifier(struct notifier_block *nb);
+extern struct srcu_notifier_head charger_notifier;
+extern int charger_reg_notifier(struct notifier_block *nb);
+extern int charger_unreg_notifier(struct notifier_block *nb);
+extern int charger_notifier_call_cnain(unsigned long event, int val);
 #else
 static inline int
 qti_battery_charger_get_prop(const char *name,
