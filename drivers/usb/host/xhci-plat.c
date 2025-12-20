@@ -428,8 +428,6 @@ void xhci_plat_remove(struct platform_device *dev)
 		xhci->shared_hcd = NULL;
 	}
 
-	usb_phy_shutdown(hcd->usb_phy);
-
 	usb_remove_hcd(hcd);
 
 	if (shared_hcd)
@@ -438,6 +436,7 @@ void xhci_plat_remove(struct platform_device *dev)
 	clk_disable_unprepare(clk);
 	clk_disable_unprepare(reg_clk);
 	reset_control_assert(xhci->reset);
+	usb_phy_shutdown(hcd->usb_phy);
 	usb_put_hcd(hcd);
 
 	pm_runtime_disable(&dev->dev);
