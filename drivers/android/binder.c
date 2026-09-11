@@ -213,6 +213,7 @@ static struct binder_transaction_log binder_transaction_log_failed;
 static struct kmem_cache *binder_node_pool;
 static struct kmem_cache *binder_proc_ext_pool;
 static struct kmem_cache *binder_ref_death_pool;
+static struct kmem_cache *binder_ref_freeze_pool;
 static struct kmem_cache *binder_ref_pool;
 static struct kmem_cache *binder_thread_pool;
 static struct kmem_cache *binder_transaction_pool;
@@ -1426,7 +1427,8 @@ static void binder_free_ref(struct binder_ref *ref)
 		binder_free_node(ref->node);
 	if (ref->death)
 		kmem_cache_free(binder_ref_death_pool, ref->death);
-	kfree(ref->freeze);
+	if (ref->freeze)
+		kmem_cache_free(binder_ref_freeze_pool, ref->freeze);
 	kmem_cache_free(binder_ref_pool, ref);
 }
 
@@ -3869,7 +3871,7 @@ binder_request_freeze_notification(struct binder_proc *proc,
 	struct binder_ref_freeze *freeze;
 	struct binder_ref *ref;
 
-	freeze = kzalloc(sizeof(*freeze), GFP_KERNEL);
+	freeze = kmem_cache_zalloc(binder_ref_freeze_pool, GFP_KERNEL);
 	if (!freeze)
 		return -ENOMEM;
 	binder_proc_lock(proc);
@@ -3878,7 +3880,8 @@ binder_request_freeze_notification(struct binder_proc *proc,
 		binder_user_error("%d:%d BC_REQUEST_FREEZE_NOTIFICATION invalid ref %d\n",
 				  proc->pid, thread->pid, handle_cookie->handle);
 		binder_proc_unlock(proc);
-		kfree(freeze);
+		if (freeze)
+			kmem_cache_free(binder_ref_freeze_pool, freeze);
 		return -EINVAL;
 	}
 
@@ -3888,7 +3891,8 @@ binder_request_freeze_notification(struct binder_proc *proc,
 				  proc->pid, thread->pid);
 		binder_node_unlock(ref->node);
 		binder_proc_unlock(proc);
-		kfree(freeze);
+		if (freeze)
+			kmem_cache_free(binder_ref_freeze_pool, freeze);
 		return -EINVAL;
 	}
 
@@ -4962,7 +4966,7 @@ retry:
 			binder_uintptr_t cookie = freeze->cookie;
 
 			binder_inner_proc_unlock(proc);
-			kfree(freeze);
+			kmem_cache_free(binder_ref_freeze_pool, freeze);
 			if (put_user(BR_CLEAR_FREEZE_NOTIFICATION_DONE, (uint32_t __user *)ptr))
 				return -EFAULT;
 			ptr += sizeof(uint32_t);
@@ -5187,7 +5191,7 @@ static void binder_release_work(struct binder_proc *proc,
 			binder_debug(BINDER_DEBUG_DEAD_TRANSACTION,
 				     "undelivered freeze notification, %016llx\n",
 				     (u64)freeze->cookie);
-			kfree(freeze);
+			kmem_cache_free(binder_ref_freeze_pool, freeze);
 		} break;
 		default:
 			pr_err("unexpected work type, %d, not freed\n",
@@ -7070,6 +7074,10 @@ static int __init binder_create_pools(void)
 	if (!binder_ref_death_pool)
 		goto err_ref_death_pool;
 
+	binder_ref_freeze_pool = KMEM_CACHE(binder_ref_freeze, SLAB_HWCACHE_ALIGN);
+	if (!binder_ref_freeze_pool)
+		goto err_ref_freeze_pool;
+
 	binder_ref_pool = KMEM_CACHE(binder_ref, SLAB_HWCACHE_ALIGN);
 	if (!binder_ref_pool)
 		goto err_ref_pool;
@@ -7095,6 +7103,8 @@ err_transaction_pool:
 err_thread_pool:
 	kmem_cache_destroy(binder_ref_pool);
 err_ref_pool:
+	kmem_cache_destroy(binder_ref_freeze_pool);
+err_ref_freeze_pool:
 	kmem_cache_destroy(binder_ref_death_pool);
 err_ref_death_pool:
 	kmem_cache_destroy(binder_proc_ext_pool);
@@ -7111,6 +7121,7 @@ static void __init binder_destroy_pools(void)
 	kmem_cache_destroy(binder_node_pool);
 	kmem_cache_destroy(binder_proc_ext_pool);
 	kmem_cache_destroy(binder_ref_death_pool);
+	kmem_cache_destroy(binder_ref_freeze_pool);
 	kmem_cache_destroy(binder_ref_pool);
 	kmem_cache_destroy(binder_thread_pool);
 	kmem_cache_destroy(binder_transaction_pool);
