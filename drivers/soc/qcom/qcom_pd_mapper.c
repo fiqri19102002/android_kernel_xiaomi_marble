@@ -371,6 +371,17 @@ static const struct qcom_pdm_domain_data *cape_domains[] = {
 	NULL,
 };
 
+static const struct qcom_pdm_domain_data *ukee_domains[] = {
+	&adsp_audio_pd,
+	&adsp_root_pd,
+	&adsp_charger_pd,
+	&cdsp_root_pd,
+	&mpss_root_pd_gps,
+	&slpi_root_pd,
+	&slpi_sensor_pd,
+	NULL,
+};
+
 static const struct qcom_pdm_domain_data *msm8996_domains[] = {
 	&msm8996_adsp_audio_pd,
 	&msm8996_adsp_root_pd,
@@ -557,6 +568,7 @@ static const struct of_device_id qcom_pdm_domains[] __maybe_unused = {
 	{ .compatible = "qcom,sm8450", .data = sm8350_domains, },
 	{ .compatible = "qcom,sm8550", .data = sm8550_domains, },
 	{ .compatible = "qcom,sm8650", .data = sm8550_domains, },
+	{ .compatible = "qcom,ukee", .data = ukee_domains, },
 	{},
 };
 
