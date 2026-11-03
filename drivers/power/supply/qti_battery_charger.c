@@ -571,6 +571,7 @@ struct psy_state {
 struct battery_chg_match_data {
 	const struct power_supply_desc	*batt_psy_desc;
 	const struct power_supply_desc	*wls_psy_desc;
+	u32				batt_prop_count;
 };
 
 struct battery_chg_dev {
@@ -885,6 +886,9 @@ static int write_property_id(struct battery_chg_dev *bcdev,
 {
 	struct battery_charger_req_msg req_msg = { { 0 } };
 
+	if (prop_id >= pst->prop_count)
+		return -EOPNOTSUPP;
+
 	req_msg.property_id = prop_id;
 	req_msg.battery_id = 0;
 	req_msg.value = val;
@@ -903,6 +907,9 @@ static int read_property_id(struct battery_chg_dev *bcdev,
 			struct psy_state *pst, u32 prop_id)
 {
 	struct battery_charger_req_msg req_msg = { { 0 } };
+
+	if (prop_id >= pst->prop_count)
+		return -EOPNOTSUPP;
 
 	req_msg.property_id = prop_id;
 	req_msg.battery_id = 0;
@@ -2247,7 +2254,9 @@ static int get_charge_control_en(struct battery_chg_dev *bcdev)
 
 	rc = read_property_id(bcdev, &bcdev->psy_list[PSY_TYPE_BATTERY],
 				BATT_CHG_CTRL_EN);
-	if (rc < 0)
+	if (rc == -EOPNOTSUPP)
+		return rc;
+	else if (rc < 0)
 		pr_err("Failed to read the CHG_CTRL_EN, rc = %d\n", rc);
 	else
 		bcdev->chg_ctrl_en =
@@ -2507,11 +2516,14 @@ static const struct power_supply_desc batt_psy_desc_waipio = {
 static const struct battery_chg_match_data battery_chg_match_data_default = {
 	.batt_psy_desc		= &batt_psy_desc,
 	.wls_psy_desc		= &wls_psy_desc,
+	.batt_prop_count	= BATT_PROP_MAX,
 };
 
 static const struct battery_chg_match_data battery_chg_match_data_waipio = {
 	.batt_psy_desc		= &batt_psy_desc_waipio,
 	.wls_psy_desc		= &wls_psy_desc_waipio,
+	/* The Xiaomi ADSP firmware asserts on the charge control and later properties */
+	.batt_prop_count	= BATT_CHG_CTRL_EN,
 };
 
 #if defined(CONFIG_BQ_FUEL_GAUGE)
@@ -8969,6 +8981,7 @@ static int battery_chg_probe(struct platform_device *pdev)
 		if (!bcdev->psy_list[i].prop)
 			return -ENOMEM;
 	}
+	bcdev->psy_list[PSY_TYPE_BATTERY].prop_count = bcdev->match_data->batt_prop_count;
 
 	bcdev->psy_list[PSY_TYPE_BATTERY].model =
 		devm_kzalloc(&pdev->dev, MAX_STR_LEN, GFP_KERNEL);
