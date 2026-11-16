@@ -7350,7 +7350,7 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 	}
 
 	state = dwc3_drd_state_string(mdwc->drd_state);
-	dev_err(mdwc->dev, "%s state, mdwc->inputs is %d\n", state, mdwc->inputs);
+	dev_err(mdwc->dev, "%s state, mdwc->inputs is %lu\n", state, mdwc->inputs);
 	dbg_event(0xFF, state, 0);
 
 	/* Check OTG state */
