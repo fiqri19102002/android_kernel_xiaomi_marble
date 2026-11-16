@@ -336,29 +336,22 @@ static int eusb2_repeater_i2c_probe(struct i2c_client *client)
 	num_elem = of_property_count_elems_of_size(dev->of_node, "qcom,param-override-seq-host",
 				sizeof(*er->param_override_seq_host));
 	if (num_elem > 0) {
-		if (num_elem % 2) {
-			dev_err(dev, "invalid param_override_seq_len\n");
-			ret = -EINVAL;
-			goto err_probe;
-		}
+		if (num_elem % 2)
+			return dev_err_probe(dev, -EINVAL, "invalid param_override_seq_len\n");
 
 		er->param_override_seq_cnt_host = num_elem;
 		er->param_override_seq_host = devm_kcalloc(dev,
 				er->param_override_seq_cnt_host,
 				sizeof(*er->param_override_seq_host), GFP_KERNEL);
-		if (!er->param_override_seq_host) {
-			ret = -ENOMEM;
-			goto err_probe;
-		}
+		if (!er->param_override_seq_host)
+			return -ENOMEM;
 
 		ret = of_property_read_u32_array(dev->of_node,
 				"qcom,param-override-seq-host",
 				er->param_override_seq_host,
 				er->param_override_seq_cnt_host);
-		if (ret) {
-			dev_err(dev, "qcom,param-override-seq-host read failed %d\n", ret);
-			goto err_probe;
-		}
+		if (ret)
+			return dev_err_probe(dev, ret, "qcom,param-override-seq-host read failed\n");
 	}
 	/*This is for host params. end*/
 
