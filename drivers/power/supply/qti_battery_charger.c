@@ -936,7 +936,7 @@ static int write_ss_auth_prop_id(struct battery_chg_dev *bcdev,
 	req_msg.hdr.opcode = pst->opcode_set;
 	memcpy(req_msg.data, buff, BATTERY_SS_AUTH_DATA_LEN * sizeof(u32));
 
-	pr_debug("psy: prop_id:%d size:%d data[0]:0x%x data[1]:0x%x data[2]:0x%x data[3]:0x%x\n",
+	pr_debug("psy: prop_id:%d size:%zu data[0]:0x%x data[1]:0x%x data[2]:0x%x data[3]:0x%x\n",
 		req_msg.property_id, sizeof(req_msg), req_msg.data[0], req_msg.data[1], req_msg.data[2], req_msg.data[3]);
 
 	return battery_chg_write(bcdev, &req_msg, sizeof(req_msg));
@@ -970,7 +970,7 @@ static int write_verify_digest_prop_id(struct battery_chg_dev *bcdev,
 	req_msg.slave_fg = bcdev->slave_fg_verify_flag;
 	memcpy(req_msg.digest, buff, BATTERY_DIGEST_LEN);
 
-	pr_debug("psy: prop_id:%d size:%d\n", req_msg.property_id, sizeof(req_msg));
+	pr_debug("psy: prop_id:%d size:%zu\n", req_msg.property_id, sizeof(req_msg));
 
 	return battery_chg_write(bcdev, &req_msg, sizeof(req_msg));
 }
@@ -1038,7 +1038,7 @@ static int write_wls_bin_prop_id(struct battery_chg_dev *bcdev, struct psy_state
 	else if (serial_number == total_length / MAX_STR_LEN)
 		memcpy(req_msg.wls_fw_bin, buff, total_length - serial_number * MAX_STR_LEN);
 
-	pr_debug("psy: prop_id:%d size:%d\n", req_msg.property_id, sizeof(req_msg));
+	pr_debug("psy: prop_id:%d size:%zu\n", req_msg.property_id, sizeof(req_msg));
 
 	return battery_chg_write(bcdev, &req_msg, sizeof(req_msg));
 }
@@ -1815,14 +1815,6 @@ static const struct power_supply_desc wls_psy_desc_waipio = {
 };
 
 static const char *get_wls_type_name(u32 wls_type)
-{
-	if (wls_type >= ARRAY_SIZE(qc_power_supply_wls_type_text))
-		return "Unknown";
-
-	return qc_power_supply_wls_type_text[wls_type];
-}
-
-static const char *get_usb_type_name(u32 usb_type)
 {
 	if (wls_type >= ARRAY_SIZE(qc_power_supply_wls_type_text))
 		return "Unknown";
@@ -3207,7 +3199,7 @@ static ssize_t wls_debug_store(const struct class *c,
 	struct chg_debug_msg req_msg = { { 0 } };
 	int rc;
 
-	pr_info("buf: %s, count: %d ", buf, count);
+	pr_info("buf: %s, count: %zu ", buf, count);
 
 	req_msg.property_id = XM_PROP_CHG_DEBUG;
 	req_msg.type = CHG_WLS_DEBUG;
@@ -3593,7 +3585,7 @@ static ssize_t wls_bin_store(const struct class *c,
 	static u8 fw_area = 0;
 	int i;
 
-	pr_err("buf:%s, count:%d\n", buf, count);
+	pr_err("buf:%s, count:%zu\n", buf, count);
 	if (strncmp("length:", buf, 7) == 0) {
 		if (kstrtou16(buf + 7, 10, &total_length))
 			return -EINVAL;
@@ -4562,7 +4554,7 @@ static ssize_t request_vdm_cmd_show(const struct class *c,
 			bcdev->ss_auth_data[0], bcdev->ss_auth_data[1], bcdev->ss_auth_data[2], bcdev->ss_auth_data[3]);
 		for (i = 0; i < USBPD_UVDM_SS_LEN; i++) {
 			memset(data, 0, sizeof(data));
-			snprintf(data, sizeof(data), "%08lx", bcdev->ss_auth_data[i]);
+			snprintf(data, sizeof(data), "%08x", bcdev->ss_auth_data[i]);
 			strlcat(str_buf, data, sizeof(str_buf));
 		}
 		return snprintf(buf, PAGE_SIZE, "%d,%s", cmd, str_buf);
