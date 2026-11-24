@@ -175,6 +175,7 @@ def define_waipio():
         "drivers/soc/qcom/qcom_cpu_vendor_hooks.ko",
         "drivers/soc/qcom/qcom_cpucp.ko",
         "drivers/soc/qcom/qcom_cpuss_sleep_stats.ko",
+        "drivers/soc/qcom/qcom_dynamic_ramoops.ko",
         "drivers/soc/qcom/qcom_ice.ko",
         "drivers/soc/qcom/qcom_logbuf_vendor_hooks.ko",
         "drivers/soc/qcom/qcom_pd_mapper.ko",
