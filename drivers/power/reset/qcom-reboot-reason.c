@@ -54,9 +54,10 @@ static int qcom_reboot_reason_reboot(struct notifier_block *this,
 	struct poweroff_reason *reason;
 
 	if (!cmd) {
-		nvmem_cell_write(reboot->nvmem_cell,
-				 &reasons[RESTART_REASON_NORMAL].pon_reason,
-				 sizeof(reasons[RESTART_REASON_NORMAL].pon_reason));
+		if (reboot->nvmem_cell)
+			nvmem_cell_write(reboot->nvmem_cell,
+					 &reasons[RESTART_REASON_NORMAL].pon_reason,
+					 sizeof(reasons[RESTART_REASON_NORMAL].pon_reason));
 		return NOTIFY_OK;
 	}
 	for (reason = reasons; reason->cmd; reason++) {
@@ -71,9 +72,10 @@ static int qcom_reboot_reason_reboot(struct notifier_block *this,
 			return NOTIFY_OK;
 		}
 	}
-	nvmem_cell_write(reboot->nvmem_cell,
-			&reason->pon_reason,
-			sizeof(reason->pon_reason));
+	if (reboot->nvmem_cell)
+		nvmem_cell_write(reboot->nvmem_cell,
+				&reason->pon_reason,
+				sizeof(reason->pon_reason));
 
 	return NOTIFY_OK;
 }
